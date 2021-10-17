@@ -1,9 +1,9 @@
-# co2accounting-rapidapi
+# co2accounting
 <a href="https://stromdao.de/" target="_blank" title="STROMDAO - Digital Energy Infrastructure"><img src="./static/stromdao.png" align="right" height="85px" hspace="30px" vspace="30px"></a>
 
-**GHG accounting and decompensation in accordance to ISO14064-3 usind CO2 Offset API**
+**GHG accounting and decompensation in accordance to ISO14064-3 using [CO2 Offset API](https://co2offset.io/)**
 
-[![CO2Offset](https://api.corrently.io/v2.0/ghgmanage/statusimg?host=npm-co2accounting-rapidapi&svg=1)](https://co2offset.io/badge.html?host=npm-co2accounting-rapidapi)
+[![CO2Offset](https://api.corrently.io/v2.0/ghgmanage/statusimg?host=npm-co2accounting&svg=1)](https://co2offset.io/badge.html?host=npm-co2accounting)
 
 
 ## Installation
