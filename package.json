@@ -1,6 +1,6 @@
 {
   "name": "co2accounting",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CO2 Accounting using CO2 Offset API",
   "main": "index.js",
   "scripts": {
