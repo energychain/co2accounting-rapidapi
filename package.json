@@ -1,0 +1,33 @@
+{
+  "name": "co2accounting",
+  "version": "1.0.0",
+  "description": "CO2 Accounting using CO2 Offset API",
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/energychain/co2accounting-rapidapi.git"
+  },
+  "keywords": [
+    "co2",
+    "accounting",
+    "rapidapi",
+    "stromdao",
+    "corrently"
+  ],
+  "author": "STROMDAO GmbH <dev@stromdao.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/energychain/co2accounting-rapidapi/issues"
+  },
+  "homepage": "https://github.com/energychain/co2accounting-rapidapi#readme",
+  "dependencies": {
+    "axios": "^0.23.0",
+    "mocka": "0.0.1"
+  },
+  "devDependencies": {
+    "mocha": "^9.1.3"
+  }
+}
