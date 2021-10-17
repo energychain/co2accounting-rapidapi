@@ -4,18 +4,25 @@
   "description": "CO2 Accounting using CO2 Offset API",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha"
+    "test": "./node_modules/mocha/bin/mocha",
+    "lint": "eslint .",
+    "lint:fix": "npm run lint -- --fix"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/energychain/co2accounting-rapidapi.git"
+  },
+  "bin": {
+    "co2accounting": "./cli.js"
   },
   "keywords": [
     "co2",
     "accounting",
     "rapidapi",
     "stromdao",
-    "corrently"
+    "corrently",
+    "cop26",
+    "SB2021"
   ],
   "author": "STROMDAO GmbH <dev@stromdao.com>",
   "license": "Apache-2.0",
@@ -25,9 +32,12 @@
   "homepage": "https://github.com/energychain/co2accounting-rapidapi#readme",
   "dependencies": {
     "axios": "^0.23.0",
-    "mocka": "0.0.1"
+    "commander": "^8.2.0",
+    "dotenv": "^10.0.0"
   },
   "devDependencies": {
+    "eslint": "^8.0.1",
+    "lint": "^0.7.0",
     "mocha": "^9.1.3"
   }
 }

@@ -1,0 +1,6 @@
+cmd: npm start
+targets:
+  lint:
+    cmd: "npm run lint"
+  test:
+    cmd: "npm test"

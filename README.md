@@ -3,8 +3,8 @@
 
 **GHG accounting and decompensation in accordance to ISO14064-3 using [CO2 Offset API](https://co2offset.io/)**
 
-[![CO2Offset](https://api.corrently.io/v2.0/ghgmanage/statusimg?host=npm-co2accounting&svg=1)](https://co2offset.io/badge.html?host=npm-co2accounting)
-
+[![CO2Offset](https://api.corrently.io/v2.0/ghgmanage/statusimg?host=npm-co2accounting&svg=1)](https://co2offset.io/badge.html?host=npm-co2accounting)[![NPM Version](http://img.shields.io/npm/v/co2accounting.svg?style=flat)](https://www.npmjs.org/package/co2accounting)
+[![NPM Downloads](https://img.shields.io/npm/dm/co2accounting.svg?style=flat)](https://npmcharts.com/compare/co2accounting?minimal=true)
 
 ## Installation
 
@@ -32,8 +32,42 @@ cd co2accounting-rapidapi
 npm install
 ```
 
-## Usage / Use Cases
+## Usage
 
+### Use as command line tool (CLI)
+
+In order to script and/or include `co2accounting` a simple CLI-Interface is available. However, you might want to extend/modify the cli.js to fit to your particular needs.
+
+#### Installation
+```bash
+npm install -g --save co2accounting
+co2accounting -h
+```
+
+| Command | Description |
+|---------|-------------|
+| `whoami`  | Gives your Account Id |
+| `compensate [options] <grams>` | Direct compensate given number grams or CO2 |
+| `compensateEvent [options] <eventId>` | Compensate remaing emission of an event |
+| `emission [options] <grams>` | Add emission to account. |
+| `balance [options]` | Retrieves CO2 Accounting Balance |
+| `footprint [options] <searchTerm>` | Searches in Footprint database |
+| `events [options]` | Retrieves emission events |
+| `help [command]` | display help for command |
+
+### Use as module (in your code)
+
+The main usage of `co2accounting` is from within your code as node module. Best reference are the [test cases](./test).  
+
+```javascript
+const CO2Accounting = require('co2accounting');
+
+const instance = new CO2Accounting('INSERT-RAPIDAPI-KEY');
+
+console.log(await instance.whoami());
+```
+
+Try on this on [RunKit](https://runkit.com/zoernert/616cb35d060c2300093889ab).
 
 
 ## Tests
@@ -59,10 +93,7 @@ npm test
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change. Please make sure to update tests as appropriate. Details on [contributing](./CONTRIBUTING.md).
 
-
 ## Maintainer / Imprint
-
-<img src="./docs/bmwi_note.png" align="right" height="300px" hspace="30px" vspace="30px">
 
 <addr>
 STROMDAO GmbH  <br/>
@@ -77,6 +108,7 @@ kontakt@stromdao.com  <br/>
 Handelsregister: HRB 728691 (Amtsgericht Mannheim)
 </addr>
 
+Project Website: https://co2offset.io/
 
 ## LICENSE
 [Apache-2.0](./LICENSE)
