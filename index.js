@@ -59,6 +59,22 @@ const co2accounting = function(rapidAPIkey) {
           return await parent._compensate(eventData.event.co2eq - eventData.event.offset,event);
   };
 
+  this.eventDelete = async function(event) {
+          const responds = await axios({
+                "method":"GET",
+                "url":"https://co2-offset.p.rapidapi.com/rapidapi/forgetEvent",
+                "headers":{
+                "content-type":"application/octet-stream",
+                "x-rapidapi-host":"co2-offset.p.rapidapi.com",
+                "x-rapidapi-key":rapidAPIkey,
+                "useQueryString":true
+                },"params":{
+                  "event":event
+                }
+        });
+        return responds.data;
+  };
+
   this.identityLookup = async function(account) {
           return await parent._identityLookup(account);
   };

@@ -167,6 +167,48 @@ program
    });
 
    program
+     .command('addevent')
+     .description('Retrieves CO2 Accounting Balance')
+     .option('-k,--rapidapi <key>', 'RapidAPI Key')
+     .option('-v,--verbose', 'more verbose output')
+     .option('-j,--json', 'Output JSON')
+     .option('-n,--quantity <cnt>', 'Count of units')
+     .option('-f,--factor <co2eq>', 'Grams of CO2 per quantity (given with -n)')
+     .option('-u,--unit <unitacronym>', 'Unit (default=pcs)')
+     .option('-t,--title <EventTitle>', 'Title (default=CLI Events)')
+     .option('-a,--activity <footprintId>', 'Id from footprint lookup to preset unit, factor, title (default=none)')
+     .action(async (options) => {
+       const instance = new CO2Accounting(getAPIKey(options));
+       let settlementInput = {
+           title: 'CLI Event',
+           qty: 0,
+           unit:'pcs',
+           factor:1
+       };
+       if(typeof options.quantity !== 'undefined') settlementInput.qty = Math.abs(options.quantity);
+       if(typeof options.factor !== 'undefined') settlementInput.factor = Math.abs(options.factor);
+       if(typeof options.unit !== 'undefined') settlementInput.unit = options.unit;
+       if(typeof options.title !== 'undefined') settlementInput.title = options.title;
+       if(typeof options.activity !== 'undefined') settlementInput.activity = options.activity;
+       let result = await instance.settleEvent(settlementInput);
+
+       if(typeof options.verbose !== 'undefined') {
+         let row = {};
+         row.event = result.event;
+         row.title = result.title;
+         row.qty = result.qty;
+         row.unit =result.unit;
+         row.co2eq =result.co2eq;
+         console.table([row]);
+       } else
+       if(typeof options.json !== 'undefined') {
+         console.log(result);
+       }else {
+         console.log(result.event);
+       }
+    });
+
+   program
      .command('events')
      .description('Retrieves emission events')
      .option('-k,--rapidapi <key>', 'RapidAPI Key')
@@ -187,16 +229,29 @@ program
        }
        if(typeof options.verbose !== 'undefined') {
          let table = [];
+         let total_liability = 0;
+         let total_assets = 0;
          for(let i=0;i<result.length;i++) {
             let row = {};
             row.title = result[i].title
             row.event = result[i].event;
-            row.liabilitiy = result[i].co2eq;
-            row.asset = result[i].offset;
+            row.asset = result[i].offset * 1;
+            if(!isNaN(row.asset)) total_assets += row.asset;
+            row.liabilitiy = result[i].co2eq * 1;
+            if(!isNaN(row.liabilitiy)) total_liability += row.liabilitiy;
             row.balance = row.asset  - row.liabilitiy;
             table.push(row);
          }
+         console.log('Ledger');
          console.table(table);
+         console.log('Balance');
+         console.table([{
+           title:'Total',
+           account:await instance.whoami(),
+           assset: total_assets,
+           liability: total_liability,
+           balance: total_assets - total_liability
+         }]);
        } else
        if(typeof options.json !== 'undefined') {
          console.log(result);
@@ -206,6 +261,25 @@ program
          }
        }
     });
+
+    program
+      .command('deleteevent <eventId>')
+      .description('Removes an event by its Id')
+      .option('-k,--rapidapi <key>', 'RapidAPI Key')
+      .option('-v,--verbose', 'more verbose output')
+      .option('-j,--json', 'Output JSON')
+      .action(async (eventId,options) => {
+        const instance = new CO2Accounting(getAPIKey(options));
+        let result = await instance.eventDelete(eventId);
+        if(typeof options.verbose !== 'undefined') {
+          console.log(result);
+        } else
+        if(typeof options.json !== 'undefined') {
+          console.log(result);
+        }else {
+          console.log(result);
+        }
+     });
 
     program
       .command('identity <account>')
