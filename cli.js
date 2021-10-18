@@ -177,6 +177,7 @@ program
      .option('-u,--unit <unitacronym>', 'Unit (default=pcs)')
      .option('-t,--title <EventTitle>', 'Title (default=CLI Events)')
      .option('-a,--activity <footprintId>', 'Id from footprint lookup to preset unit, factor, title (default=none)')
+     .option('-s,--presafing <grams>', 'Upstream safing/compensation')
      .action(async (options) => {
        const instance = new CO2Accounting(getAPIKey(options));
        let settlementInput = {
@@ -190,6 +191,8 @@ program
        if(typeof options.unit !== 'undefined') settlementInput.unit = options.unit;
        if(typeof options.title !== 'undefined') settlementInput.title = options.title;
        if(typeof options.activity !== 'undefined') settlementInput.activity = options.activity;
+       if(typeof options.presafing !== 'undefined') settlementInput.presafing = options.presafing;
+
        let result = await instance.settleEvent(settlementInput);
 
        if(typeof options.verbose !== 'undefined') {
@@ -235,6 +238,9 @@ program
             let row = {};
             row.title = result[i].title
             row.event = result[i].event;
+            if(typeof result[i].presafing !== 'undefined') {
+              row.presafing = 1 * result[i].presafing;
+            } else row.presafing = 0;
             row.asset = result[i].offset * 1;
             if(!isNaN(row.asset)) total_assets += row.asset;
             row.liabilitiy = result[i].co2eq * 1;

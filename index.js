@@ -175,4 +175,3 @@ const co2accounting = function(rapidAPIkey) {
 }
 
 module.exports = co2accounting;
-exports.default = co2accounting;
