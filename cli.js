@@ -143,8 +143,6 @@ program
        }
     });
 
-
-
   program
     .command('balance')
     .description('Retrieves CO2 Accounting Balance')
@@ -208,6 +206,59 @@ program
          }
        }
     });
+
+    program
+      .command('identity <account>')
+      .description('Retrieves CO2 Accounting Balance')
+      .option('-k,--rapidapi <key>', 'RapidAPI Key')
+      .option('-v,--verbose', 'more verbose output')
+      .option('-j,--json', 'Output JSON')
+      .action(async (account,options) => {
+        const instance = new CO2Accounting(getAPIKey(options));
+        let result = await instance.identityLookup(account);
+        if(typeof options.verbose !== 'undefined') {
+          let row = {};
+          row.account = result.account;
+          row.nature = result.nature;
+          console.table([row]);
+        } else
+        if(typeof options.json !== 'undefined') {
+          console.log(result);
+        }else {
+          console.log(result.nature);
+        }
+     });
+
+    program
+      .command('disaggregationElectricity <zipcode> <wh> <product>')
+      .description('Disaggregation for Electricity (only available for Germany). Product:eco or standard')
+      .option('-k,--rapidapi <key>', 'RapidAPI Key')
+      .option('-v,--verbose', 'more verbose output')
+      .option('-j,--json', 'Output JSON')
+      .action(async (zipcode,wh,product,options) => {
+        const instance = new CO2Accounting(getAPIKey(options));
+        let result = await instance.disaggregationElectricity(zipcode,wh,product);
+        if(typeof options.verbose !== 'undefined') {
+          console.table([
+            {
+              co2:result.co2.totalEmission,
+              presafing:result.presafing,
+              settlement:result.signature
+            }
+          ]);
+          let table = [];
+          for(let i=0;i<result.generation.mix.length;i++) {
+            let row = result.generation.mix[i];
+            table.push(row);
+          }
+          console.table(table);
+        } else
+        if(typeof options.json !== 'undefined') {
+          console.log(result);
+        }else {
+          console.log(result.co2.totalEmission);
+        }
+     });
 
 /*
 

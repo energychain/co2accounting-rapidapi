@@ -53,6 +53,7 @@ co2accounting -h
 | `balance [options]` | Retrieves CO2 Accounting Balance |
 | `footprint [options] <searchTerm>` | Searches in Footprint database |
 | `events [options]` | Retrieves emission events |
+| `identity [options] <account>` | Retrieves Nature and Details of given identity |
 | `help [command]` | display help for command |
 
 ### Use as module (in your code)

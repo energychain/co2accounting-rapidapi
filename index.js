@@ -80,7 +80,6 @@ const co2accounting = function(rapidAPIkey) {
   };
 
   this.listEvents = async function(account) {
-
             if((typeof account == 'undefined') || (account == null)) {
                 account = await parent.whoami();
             }
@@ -95,6 +94,20 @@ const co2accounting = function(rapidAPIkey) {
                   "useQueryString":true
                   },"params":{
                     "account":account
+                  }
+          });
+          return responds.data;
+  };
+
+  this.disaggregationElectricity  = async function(zip,wh,product) {
+            const responds = await axios({
+                  "method":"GET",
+                  "url": "https://co2-offset.p.rapidapi.com/rapidapi/dispatchcert?zip="+zip+"&wh="+wh+"&product="+product,
+                  "headers":{
+                  "content-type":"application/octet-stream",
+                  "x-rapidapi-host":"co2-offset.p.rapidapi.com",
+                  "x-rapidapi-key":rapidAPIkey,
+                  "useQueryString":true
                   }
           });
           return responds.data;
