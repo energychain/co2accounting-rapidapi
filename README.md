@@ -4,7 +4,7 @@
 **GHG accounting and decompensation in accordance to ISO14064-3 using [CO2 Offset API](https://co2offset.io/)**
 
 [![CO2Offset](https://api.corrently.io/v2.0/ghgmanage/statusimg?host=npm-co2accounting&svg=1)](https://co2offset.io/badge.html?host=npm-co2accounting)[![NPM Version](http://img.shields.io/npm/v/co2accounting.svg?style=flat)](https://www.npmjs.org/package/co2accounting)
-[![NPM Downloads](https://img.shields.io/npm/dm/co2accounting.svg?style=flat)](https://npmcharts.com/compare/co2accounting?minimal=true)
+[![NPM Downloads](https://img.shields.io/npm/dm/co2accounting.svg?style=flat)](https://npmcharts.com/compare/co2accounting?minimal=true)[![CircleCI](https://circleci.com/gh/energychain/co2accounting-rapidapi/tree/main.svg?style=svg)](https://circleci.com/gh/energychain/co2accounting-rapidapi/tree/main)
 
 ## Installation
 
