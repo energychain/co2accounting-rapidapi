@@ -81,7 +81,7 @@ Checkout source code first and install dependencies.
 Create a `.env` file containing your RapidAPI Key [Retrieve/Signup](https://rapidapi.com/stromdao-stromdao-default/api/co2-offset).
 
 ```
-RAPIDAPIKEY="YOURAPIKEY-GOES-HERE";
+RAPIDAPIKEY=YOURAPIKEY-GOES-HERE
 ```
 
 Run tests

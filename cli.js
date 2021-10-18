@@ -15,7 +15,7 @@ const getAPIKey = function(options) {
   }
 
   if(typeof process.env.RAPIDAPIKEY !== 'undefined') {
-     rapidAPIkey = process.env.RAPIDAPIKEY.substr(1,50);
+     rapidAPIkey = process.env.RAPIDAPIKEY;
   }
 
   if(rapidAPIkey.length < 30) {

@@ -4,12 +4,15 @@
 
 const assert = require('assert');
 const CO2accounting = require("../index.js");
-const env = require("../.env");
+require('dotenv').config();
 
 describe('CO2 Accounting - Electricity Germany', function() {
   let instance = {};
 
   before(async () => {
+    if(typeof process.env.RAPIDAPIKEY !== 'undefined') {
+       RAPIDAPIKEY = process.env.RAPIDAPIKEY;
+    }
     instance = new CO2accounting(RAPIDAPIKEY);
   });
 
