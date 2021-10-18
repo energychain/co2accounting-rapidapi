@@ -68,7 +68,7 @@ const instance = new CO2Accounting('INSERT-RAPIDAPI-KEY');
 console.log(await instance.whoami());
 ```
 
-Try on this on [RunKit](https://runkit.com/zoernert/616cb35d060c2300093889ab).
+Try on this on [RunKit](https://runkit.com/zoernert/co2accounting-whoami-hello-world).
 
 
 ## Tests
