@@ -20,7 +20,10 @@ npm install --g co2accounting
 
 ```bash
 npm install --save co2accounting
+cp sample.env .env
 ```
+
+Edit the .env and set your RapidAPI-Key.
 
 ### via source
 
