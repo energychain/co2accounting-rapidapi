@@ -159,6 +159,20 @@ const co2accounting = function(rapidAPIkey) {
           return responds.data;
   };
 
+  this.certificates = async function() {
+        const responds = await axios({
+                "method":"GET",
+                "url":"https://co2-offset.p.rapidapi.com/rapidapi/certificates",
+                "headers":{
+                "content-type":"application/json",
+                "x-rapidapi-host":"co2-offset.p.rapidapi.com",
+                "x-rapidapi-key":rapidAPIkey,
+                "useQueryString":true
+                }
+        });
+        return responds.data;
+  }
+
   this.whoami = async function() {
         const responds = await axios({
                 "method":"GET",

@@ -4,3 +4,5 @@ targets:
     cmd: "npm run lint"
   test:
     cmd: "npm test"
+  webpack:
+    cmd: "webpack ./browser.js"

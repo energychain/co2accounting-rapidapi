@@ -167,6 +167,37 @@ program
    });
 
    program
+     .command('certificates')
+     .description('Retrieves List of Certificates')
+     .option('-k,--rapidapi <key>', 'RapidAPI Key')
+     .option('-v,--verbose', 'more verbose output')
+     .option('-j,--json', 'Output JSON')
+     .action(async (options) => {
+       const instance = new CO2Accounting(getAPIKey(options));
+       let result = await instance.certificates();
+       if(typeof options.verbose !== 'undefined') {
+         let table = [];
+         for(let i=0;i<result.length;i++) {
+             let row = {};
+             row.certificateId = result[i].compensation;
+             row.co2 = result[i].co2requested;
+             row.vcs = result[i].certificate.tree;
+             row.gcs = result[i].gsc.tx.from;
+             row.timestamp = new Date(result[i].gsc.tx.timestamp).toLocaleString();
+             table.push(row);
+          }
+         console.table(table);
+       } else
+       if(typeof options.json !== 'undefined') {
+         console.log(result);
+       }else {
+         for(let i=0;i<result.length;i++) {
+           console.log(result[i].compensation);
+         }
+       }
+    });
+
+   program
      .command('addevent')
      .description('Retrieves CO2 Accounting Balance')
      .option('-k,--rapidapi <key>', 'RapidAPI Key')
