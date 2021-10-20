@@ -58,6 +58,8 @@ co2accounting -h
 | `events [options]` | Retrieves emission events |
 | `identity [options] <account>` | Retrieves Nature and Details of given identity |
 | `help [command]` | display help for command |
+| `allow <sender> <permitted>` | If permitted is true the given sender is allowed to transfer co2events to this account |
+| `transfer <event> <to>` | Transfer a CO2event from this account to another account. |
 
 ### Use as module (in your code)
 

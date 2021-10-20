@@ -173,6 +173,40 @@ const co2accounting = function(rapidAPIkey) {
         return responds.data;
   }
 
+  this.allow = async function(sender,allow) {
+          const responds = await axios({
+              "method":"POST",
+                  "url":"https://co2-offset.p.rapidapi.com/rapidapi/allowSender",
+                  "headers":{
+                  "content-type":"application/json",
+                  "x-rapidapi-host":"co2-offset.p.rapidapi.com",
+                  "x-rapidapi-key":rapidAPIkey,
+                  "useQueryString":true
+                  },"data":{
+                    "sender":sender,
+                    "allow":allow
+                    }
+          });
+          return responds.data;
+  };
+
+  this.transfer = async function(_event,to) {
+          const responds = await axios({
+              "method":"POST",
+                  "url":"https://co2-offset.p.rapidapi.com/rapidapi/transfer",
+                  "headers":{
+                  "content-type":"application/json",
+                  "x-rapidapi-host":"co2-offset.p.rapidapi.com",
+                  "x-rapidapi-key":rapidAPIkey,
+                  "useQueryString":true
+                  },"data":{
+                    "event":_event,
+                    "to":to
+                    }
+          });
+          return responds.data;
+  };
+
   this.whoami = async function() {
         const responds = await axios({
                 "method":"GET",

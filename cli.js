@@ -10,12 +10,12 @@ program.version('1.0.0');
 const getAPIKey = function(options) {
   let rapidAPIkey = '';
 
-  if(typeof options.rapidapi !== 'undefined') {
-    rapidAPIkey = options.rapidapi;
-  }
-
   if(typeof process.env.RAPIDAPIKEY !== 'undefined') {
      rapidAPIkey = process.env.RAPIDAPIKEY;
+  }
+  
+  if(typeof options.rapidapi !== 'undefined') {
+    rapidAPIkey = options.rapidapi;
   }
 
   if(rapidAPIkey.length < 30) {
@@ -317,6 +317,44 @@ program
           console.log(result);
         }
      });
+
+     program
+       .command('allow <sender> <permitted>')
+       .description('If permitted true given sender could use transfer method')
+       .option('-k,--rapidapi <key>', 'RapidAPI Key')
+       .option('-v,--verbose', 'more verbose output')
+       .option('-j,--json', 'Output JSON')
+       .action(async (sender,permitted,options) => {
+         const instance = new CO2Accounting(getAPIKey(options));
+         let result = await instance.allow(sender,permitted);
+         if(typeof options.verbose !== 'undefined') {
+           console.log(result);
+         } else
+         if(typeof options.json !== 'undefined') {
+           console.log(result);
+         }else {
+           console.log(result);
+         }
+      });
+
+      program
+        .command('transfer <event> <recipient>')
+        .description('If permitted true given sender could use transfer method')
+        .option('-k,--rapidapi <key>', 'RapidAPI Key')
+        .option('-v,--verbose', 'more verbose output')
+        .option('-j,--json', 'Output JSON')
+        .action(async (_event,recipient,options) => {
+          const instance = new CO2Accounting(getAPIKey(options));
+          let result = await instance.transfer(_event,recipient);
+          if(typeof options.verbose !== 'undefined') {
+            console.log(result);
+          } else
+          if(typeof options.json !== 'undefined') {
+            console.log(result);
+          }else {
+            console.log(result);
+          }
+       });
 
     program
       .command('identity <account>')
