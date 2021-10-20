@@ -13,7 +13,7 @@ const getAPIKey = function(options) {
   if(typeof process.env.RAPIDAPIKEY !== 'undefined') {
      rapidAPIkey = process.env.RAPIDAPIKEY;
   }
-  
+
   if(typeof options.rapidapi !== 'undefined') {
     rapidAPIkey = options.rapidapi;
   }
@@ -92,6 +92,7 @@ program
     .option('-v,--verbose', 'more verbose output')
     .option('-j,--json', 'Output JSON')
     .option('-t,--title <EventTitle>', 'Set human readable title for emission event')
+    .option('-r,--transfer <recipient>', 'Directly transfer to recipient after settlment')
     .action(async (grams,options) => {
       const instance = new CO2Accounting(getAPIKey(options));
       let eventDetails = {
@@ -102,6 +103,11 @@ program
           eventDetails.title = options.title;
       }
       let result = await instance.settleEvent(eventDetails);
+
+      if(typeof options.transfer !== 'undefined'){
+        await instance.transfer(result.event,options.transfer);
+      }
+
       if(typeof options.verbose !== 'undefined') {
         let row = {};
         row.event = result.event;
@@ -209,6 +215,7 @@ program
      .option('-t,--title <EventTitle>', 'Title (default=CLI Events)')
      .option('-a,--activity <footprintId>', 'Id from footprint lookup to preset unit, factor, title (default=none)')
      .option('-s,--presafing <grams>', 'Upstream safing/compensation')
+     .option('-r,--transfer <recipient>', 'Directly transfer to recipient after settlment')
      .action(async (options) => {
        const instance = new CO2Accounting(getAPIKey(options));
        let settlementInput = {
@@ -225,6 +232,10 @@ program
        if(typeof options.presafing !== 'undefined') settlementInput.presafing = options.presafing;
 
        let result = await instance.settleEvent(settlementInput);
+
+       if(typeof options.transfer !== 'undefined'){
+         await instance.transfer(result.event,options.transfer);
+       }
 
        if(typeof options.verbose !== 'undefined') {
          let row = {};
@@ -384,13 +395,19 @@ program
       .option('-k,--rapidapi <key>', 'RapidAPI Key')
       .option('-v,--verbose', 'more verbose output')
       .option('-j,--json', 'Output JSON')
+      .option('-r,--transfer <recipient>', 'Directly transfer to recipient after settlment')
       .action(async (zipcode,wh,product,options) => {
         const instance = new CO2Accounting(getAPIKey(options));
         let result = await instance.disaggregationElectricity(zipcode,wh,product);
+
+        if(typeof options.transfer !== 'undefined'){
+          await instance.transfer(result.event,options.transfer);
+        }
+
         if(typeof options.verbose !== 'undefined') {
           console.table([
             {
-              co2:result.co2.totalEmission,
+              co2:result.co2disarg.totalEmission,
               presafing:result.presafing,
               settlement:result.signature
             }
@@ -405,7 +422,7 @@ program
         if(typeof options.json !== 'undefined') {
           console.log(result);
         }else {
-          console.log(result.co2.totalEmission);
+          console.log(result.co2disarg.totalEmission);
         }
      });
 
