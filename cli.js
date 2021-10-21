@@ -399,7 +399,7 @@ program
       .option('-r,--transfer <recipient>', 'Directly transfer to recipient after settlment')
       .action(async (zipcode,wh,product,options) => {
         const instance = new CO2Accounting(getAPIKey(options));
-        let result = await instance.disaggregationElectricity(zipcode,wh,product,title);
+        let result = await instance.disaggregationElectricity(zipcode,wh,product,options.title);
 
         if(typeof options.transfer !== 'undefined'){
           await instance.transfer(result.event,options.transfer);
