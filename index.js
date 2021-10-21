@@ -115,10 +115,13 @@ const co2accounting = function(rapidAPIkey) {
           return responds.data;
   };
 
-  this.disaggregationElectricity  = async function(zip,wh,product) {
+  this.disaggregationElectricity  = async function(zip,wh,product,title) {
+            if((typeof title == 'undefined') || (title == null)) {
+              title = 'Electricity Disaggregation (ZIP '+zip+')';
+            }
             const responds = await axios({
                   "method":"GET",
-                  "url": "https://co2-offset.p.rapidapi.com/rapidapi/dispatchcert?zip="+zip+"&wh="+wh+"&product="+product,
+                  "url": "https://co2-offset.p.rapidapi.com/rapidapi/dispatchcert?zip="+zip+"&wh="+wh+"&product="+product+"&title="+encodeURIComponent(title),
                   "headers":{
                   "content-type":"application/octet-stream",
                   "x-rapidapi-host":"co2-offset.p.rapidapi.com",

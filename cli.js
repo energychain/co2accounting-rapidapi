@@ -395,10 +395,11 @@ program
       .option('-k,--rapidapi <key>', 'RapidAPI Key')
       .option('-v,--verbose', 'more verbose output')
       .option('-j,--json', 'Output JSON')
+      .option('-t,--title <EventTitle>', 'Title')
       .option('-r,--transfer <recipient>', 'Directly transfer to recipient after settlment')
       .action(async (zipcode,wh,product,options) => {
         const instance = new CO2Accounting(getAPIKey(options));
-        let result = await instance.disaggregationElectricity(zipcode,wh,product);
+        let result = await instance.disaggregationElectricity(zipcode,wh,product,title);
 
         if(typeof options.transfer !== 'undefined'){
           await instance.transfer(result.event,options.transfer);
