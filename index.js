@@ -95,9 +95,9 @@ const co2accounting = function(rapidAPIkey) {
           return responds.data;
   };
 
-  this.listEvents = async function(account) {
-            if((typeof account == 'undefined') || (account == null)) {
-                account = await parent.whoami();
+  this.listEvents = async function(options) {
+            if((typeof options.account == 'undefined') || (options.account == null)) {
+                options.account = await parent.whoami();
             }
 
             const responds = await axios({
@@ -108,9 +108,7 @@ const co2accounting = function(rapidAPIkey) {
                   "x-rapidapi-host":"co2-offset.p.rapidapi.com",
                   "x-rapidapi-key":rapidAPIkey,
                   "useQueryString":true
-                  },"params":{
-                    "account":account
-                  }
+                },"params":options
           });
           return responds.data;
   };

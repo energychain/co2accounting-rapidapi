@@ -273,9 +273,11 @@ program
      .option('-v,--verbose', 'more verbose output')
      .option('-j,--json', 'Output JSON')
      .option('-f,--filter', 'Filter Open events')
+     .option('--afterTime <UnixTimeStamp>', 'Only events started after Time')
+     .option('--beforeTime <UnixTimeStamp>', 'Only events ended before Time')
      .action(async (options) => {
        const instance = new CO2Accounting(getAPIKey(options));
-       let result = await instance.listEvents();
+       let result = await instance.listEvents(filterCommonOptions(options));
        if(typeof options.filter !== 'undefined') {
           let result_new = [];
           for(let i=0;i<result.length;i++) {
