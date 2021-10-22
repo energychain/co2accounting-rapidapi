@@ -27,7 +27,7 @@ const getAPIKey = function(options) {
   return rapidAPIkey;
 }
 
-const filterCommonOptions = functions(options) {
+const filterCommonOptions = function(options) {
   let res = {};
   for (const [key, value] of Object.entries(options)) {
     if(key.length > 1 ) {
