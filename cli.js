@@ -27,6 +27,19 @@ const getAPIKey = function(options) {
   return rapidAPIkey;
 }
 
+const filterCommonOptions = functions(options) {
+  let res = {};
+  for (const [key, value] of Object.entries(options)) {
+    if(key.length > 1 ) {
+      res[key] = value;
+    }
+  }
+  delete res.rapidapi;
+  delete res.verbose;
+  delete res.json;
+
+  return res;
+}
 program
   .command('whoami')
   .description('Gives your Account Id')
@@ -209,29 +222,29 @@ program
      .option('-k,--rapidapi <key>', 'RapidAPI Key')
      .option('-v,--verbose', 'more verbose output')
      .option('-j,--json', 'Output JSON')
-     .option('-n,--quantity <cnt>', 'Count of units')
+     .option('-n,--qty <cnt>', 'Count of units')
      .option('-f,--factor <co2eq>', 'Grams of CO2 per quantity (given with -n)')
      .option('-u,--unit <unitacronym>', 'Unit (default=pcs)')
      .option('-t,--title <EventTitle>', 'Title (default=CLI Events)')
      .option('-a,--activity <footprintId>', 'Id from footprint lookup to preset unit, factor, title (default=none)')
      .option('-s,--presafing <grams>', 'Upstream safing/compensation')
      .option('-r,--transfer <recipient>', 'Directly transfer to recipient after settlment')
+     .option('--startTime <UnixTimeStamp>', 'Starting Time of Event in Milliseconds')
+     .option('--endTime <UnixTimeStamp>', 'End Time of Event in Milliseconds')
+     .option('--scope <scope>', 'Scope in GHG Protocol Standard - ISO14064 (Default: none)')
+     .option('--category <scope>', 'Scope in GHG Protocol Standard - ISO14064 (Default: none)')
      .action(async (options) => {
        const instance = new CO2Accounting(getAPIKey(options));
-       let settlementInput = {
-           title: 'CLI Event',
-           qty: 0,
-           unit:'pcs',
-           factor:1
-       };
-       if(typeof options.quantity !== 'undefined') settlementInput.qty = Math.abs(options.quantity);
-       if(typeof options.factor !== 'undefined') settlementInput.factor = Math.abs(options.factor);
-       if(typeof options.unit !== 'undefined') settlementInput.unit = options.unit;
-       if(typeof options.title !== 'undefined') settlementInput.title = options.title;
-       if(typeof options.activity !== 'undefined') settlementInput.activity = options.activity;
-       if(typeof options.presafing !== 'undefined') settlementInput.presafing = options.presafing;
 
-       let result = await instance.settleEvent(settlementInput);
+       if(typeof options.title == 'undefined') options.title = 'CLI Event';
+       if(typeof options.qty == 'undefined') options.qty = 0; else options.qty = 1 * options.qty;
+       if(typeof options.unit == 'undefined') options.unit = 'pcs';
+       if(typeof options.factor == 'undefined') options.factor = 1; else options.factor = options.factor * 1;
+
+       options.qty = Math.abs(options.qty);
+       options.factor = Math.abs(options.factor);
+
+       let result = await instance.settleEvent(filterCommonOptions(options));
 
        if(typeof options.transfer !== 'undefined'){
          await instance.transfer(result.event,options.transfer);
@@ -397,9 +410,13 @@ program
       .option('-j,--json', 'Output JSON')
       .option('-t,--title <EventTitle>', 'Title')
       .option('-r,--transfer <recipient>', 'Directly transfer to recipient after settlment')
+      .option('--startTime <UnixTimeStamp>', 'Starting Time of Event in Milliseconds')
+      .option('--endTime <UnixTimeStamp>', 'End Time of Event in Milliseconds')
+      .option('--scope <scope>', 'Scope in GHG Protocol Standard - ISO14064 (Default: none)')
+      .option('--category <scope>', 'Scope in GHG Protocol Standard - ISO14064 (Default: none)')
       .action(async (zipcode,wh,product,options) => {
         const instance = new CO2Accounting(getAPIKey(options));
-        let result = await instance.disaggregationElectricity(zipcode,wh,product,options.title);
+        let result = await instance.disaggregationElectricity(zipcode,wh,product,filterCommonOptions(options));
 
         if(typeof options.transfer !== 'undefined'){
           await instance.transfer(result.event,options.transfer);

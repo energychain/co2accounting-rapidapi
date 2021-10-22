@@ -115,13 +115,17 @@ const co2accounting = function(rapidAPIkey) {
           return responds.data;
   };
 
-  this.disaggregationElectricity  = async function(zip,wh,product,title) {
-            if((typeof title == 'undefined') || (title == null)) {
-              title = 'Electricity Disaggregation (ZIP '+zip+')';
+  this.disaggregationElectricity  = async function(zip,wh,product,meta) {
+            let queryString = '';
+            if((typeof meta !== 'undefined') || (meta !== null)) {
+              for (const [key, value] of Object.entries(meta)) {
+                queryString += '&' + key + '=' + encodeURIComponent(value);
+              }
             }
+
             const responds = await axios({
                   "method":"GET",
-                  "url": "https://co2-offset.p.rapidapi.com/rapidapi/dispatchcert?zip="+zip+"&wh="+wh+"&product="+product+"&title="+encodeURIComponent(title),
+                  "url": "https://co2-offset.p.rapidapi.com/rapidapi/dispatchcert?zip="+zip+"&wh="+wh+"&product="+product+queryString,
                   "headers":{
                   "content-type":"application/octet-stream",
                   "x-rapidapi-host":"co2-offset.p.rapidapi.com",
