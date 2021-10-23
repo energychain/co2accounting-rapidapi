@@ -96,8 +96,9 @@ const co2accounting = function(rapidAPIkey) {
   };
 
   this.listEvents = async function(options) {
+            if((typeof options == 'undefined')||(options == null)) { options = {}; }
             if((typeof options.account == 'undefined') || (options.account == null)) {
-                options.account = await parent.whoami();
+                  options.account = await parent.whoami();
             }
 
             const responds = await axios({
@@ -134,7 +135,8 @@ const co2accounting = function(rapidAPIkey) {
           return responds.data;
   };
 
-  this.balance = async function() {
+  this.balance = async function(options) {
+         if((typeof options == 'undefined')||(options == null)) { options = {}; }
           let nonece = new Date().getTime() + "_" + Math.random();
 
           const responds = await axios({
@@ -145,7 +147,7 @@ const co2accounting = function(rapidAPIkey) {
                   "x-rapidapi-host":"co2-offset.p.rapidapi.com",
                   "x-rapidapi-key":rapidAPIkey,
                   "useQueryString":true
-                  }
+                },"params":options
           });
           return responds.data;
   };

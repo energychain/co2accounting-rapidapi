@@ -168,9 +168,11 @@ program
     .option('-k,--rapidapi <key>', 'RapidAPI Key')
     .option('-v,--verbose', 'more verbose output')
     .option('-j,--json', 'Output JSON')
+    .option('--afterTime <UnixTimeStamp>', 'Only events started after Time')
+    .option('--beforeTime <UnixTimeStamp>', 'Only events ended before Time')
     .action(async (options) => {
       const instance = new CO2Accounting(getAPIKey(options));
-      let result = await instance.balance();
+      let result = await instance.balance(filterCommonOptions(options));
       if(typeof options.verbose !== 'undefined') {
         let row = {};
         row.assets = result.assets;
