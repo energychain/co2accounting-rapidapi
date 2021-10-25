@@ -5,6 +5,60 @@ const axios = require("axios");
 const co2accounting = function(rapidAPIkey) {
 
   let parent = this;
+  this.EVENTRELOAD = 900000;
+
+  this._forceEventReload = new Date().getTime() + this.EVENTRELOAD;
+
+  this._getAllDBEvents = function() {
+    return new Promise(function (resolve, reject) {
+      if(typeof window !== 'undefined') {
+            const request = window.indexedDB.open("co2events", 1);
+            request.onupgradeneeded = function(event) {
+              const db = event.target.result;
+              const objectStore = db.createObjectStore("events", { keyPath: "event"});
+            }
+            request.onsuccess= function(event) {
+              try {
+                const db = event.target.result;
+                const txn = db.transaction('events', "readonly");
+                 const objectStore = txn.objectStore('events');
+                 let events = [];
+
+                 objectStore.openCursor().onsuccess = (event) => {
+                     let cursor = event.target.result;
+                     if (cursor) {
+                         let dbevent = cursor.value;
+                         events.push(dbevent);
+                         cursor.continue();
+                     }
+                 };
+                 txn.oncomplete = function () {
+                     db.close();
+                     resolve(events);
+                 };
+               } catch(e) {
+                 resolve([]);
+               };
+             };
+      } else {
+          const level = require("level");
+          let events = [];
+
+          level('co2events', { createIfMissing: true }, function (err, db) {
+            db.createReadStream({})
+            .on('data', function(data) {
+              events.push(data.value);
+            })
+            .on('close',function() {
+              // resolve(events);
+            })
+            .on('end',function() {
+              resolve(events);
+            })
+          });
+      }
+    });
+  }
 
   this._compensate = async function(gramsCO2,event) {
           let settings = {
@@ -56,6 +110,7 @@ const co2accounting = function(rapidAPIkey) {
 
   this.eventCompensate = async function(event) {
           let eventData = await parent.identityLookup(event);
+          parent._forceEventReload = 0;
           return await parent._compensate(eventData.event.co2eq - eventData.event.offset,event);
   };
 
@@ -72,6 +127,7 @@ const co2accounting = function(rapidAPIkey) {
                   "event":event
                 }
         });
+        parent._forceEventReload = 0;
         return responds.data;
   };
 
@@ -100,18 +156,76 @@ const co2accounting = function(rapidAPIkey) {
             if((typeof options.account == 'undefined') || (options.account == null)) {
                   options.account = await parent.whoami();
             }
+            let requireFetch = true;
+            let data = [];
+            let fetchedData = [];
 
-            const responds = await axios({
-                  "method":"GET",
-                  "url":"https://co2-offset.p.rapidapi.com/co2/listEvents",
-                  "headers":{
-                  "content-type":"application/octet-stream",
-                  "x-rapidapi-host":"co2-offset.p.rapidapi.com",
-                  "x-rapidapi-key":rapidAPIkey,
-                  "useQueryString":true
-                },"params":options
-          });
-          return responds.data;
+            let reqoptions = {};
+
+
+            try {
+                data = await parent._getAllDBEvents();
+                let newestEventTime = 0;
+                for(let i=0;i<data.length;i++) {
+                  if(data[i].timestamp > newestEventTime) newestEventTime = data[i].timestamp;
+                }
+                if((parent._forceEventReload > new Date().getTime()) && (data.length >0)) {
+                  requireFetch = false;
+                } else {
+                  reqoptions.timestamp = newestEventTime * 1;
+                }
+            } catch (e) {
+
+            }
+
+            if(requireFetch) {
+                const responds = await axios({
+                      "method":"GET",
+                      "url":"https://co2-offset.p.rapidapi.com/co2/listEvents",
+                      "headers":{
+                      "content-type":"application/octet-stream",
+                      "x-rapidapi-host":"co2-offset.p.rapidapi.com",
+                      "x-rapidapi-key":rapidAPIkey,
+                      "useQueryString":true
+                    },"params":reqoptions
+                  });
+                fetchedData = responds.data;
+                parent._forceEventReload = new Date().getTime() + parent.EVENTRELOAD;
+              try {
+                if((typeof window !== 'undefined')&&(window.indexedDB)) {
+                  const request = window.indexedDB.open("co2events", 1);
+                  request.onupgradeneeded = function(event) {
+                  	const db = event.target.result;
+                  	const objectStore = db.createObjectStore("events", { keyPath: "event"});
+                  }
+                  request.onsuccess= function(event) {
+                    const db = event.target.result;
+                    let transaction = db.transaction("events", "readwrite");
+                    const store = transaction.objectStore("events");
+                    for(let i=0;i<fetchedData.length;i++) {
+                      store.add(fetchedData[i]);
+                    }
+                  }
+                } else {
+                  const level = require("level");
+                  level('co2events', { createIfMissing: true }, async function (err, db) {
+                    for(let i=0;i<fetchedData.length;i++) {
+                      db.put(fetchedData[i].event,fetchedData[i]);
+                    }
+                  });
+                }
+              } catch(e) {}
+          }
+          // merge data and fetchedData
+          data =  data.concat(fetchedData);
+          if(typeof options.scope !== 'undefined') {
+              let ndata = [];
+              for(let i=0;i<data.length;i++) {
+                if(data[i].scope == options.scope) ndata.push(data[i]);
+              }
+              data = ndata;
+          }
+          return data;
   };
 
   this.disaggregationElectricity  = async function(zip,wh,product,meta) {
@@ -163,6 +277,7 @@ const co2accounting = function(rapidAPIkey) {
                   "useQueryString":true
                   },"data":settlement
           });
+          parent._forceEventReload = 0;
           return responds.data;
   };
 
@@ -211,6 +326,7 @@ const co2accounting = function(rapidAPIkey) {
                     "to":to
                     }
           });
+          parent._forceEventReload = 0;
           return responds.data;
   };
 

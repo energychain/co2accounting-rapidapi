@@ -170,15 +170,34 @@ program
     .option('-j,--json', 'Output JSON')
     .option('--afterTime <UnixTimeStamp>', 'Only events started after Time')
     .option('--beforeTime <UnixTimeStamp>', 'Only events ended before Time')
+    .option('--scope <scope>', 'Balance for one of the 3 scopes (1,2,3)')
+    .option('--subbalances', 'Include Subbalances in results')
     .action(async (options) => {
       const instance = new CO2Accounting(getAPIKey(options));
       let result = await instance.balance(filterCommonOptions(options));
       if(typeof options.verbose !== 'undefined') {
+        if(typeof options.subbalances !== 'undefined') {
+          console.log("Sub Balances");
+          for (const [key, value] of Object.entries(result.subbalances)) {
+            console.log("# " + key);
+            for (const [skey, svalue] of Object.entries(value)) {
+              console.log('## ' + skey);
+              let srow = {};
+              srow.presafings = svalue.presafings;
+              srow.assets = svalue.assets;
+              srow.liabilities = svalue.liabilities;
+              srow.balance =svalue.balance;
+              console.table([srow]);
+            }
+          }
+        }
         let row = {};
+        row.presafings = result.presafings;
         row.assets = result.assets;
         row.liabilities = result.liabilities;
         row.balance =result.balance;
         console.table([row]);
+
       } else
       if(typeof options.json !== 'undefined') {
         console.log(result);
@@ -277,6 +296,7 @@ program
      .option('-f,--filter', 'Filter Open events')
      .option('--afterTime <UnixTimeStamp>', 'Only events started after Time')
      .option('--beforeTime <UnixTimeStamp>', 'Only events ended before Time')
+     .option('--scope <scope>', 'Balance for one of the 3 scopes (1,2,3)')
      .action(async (options) => {
        const instance = new CO2Accounting(getAPIKey(options));
        let result = await instance.listEvents(filterCommonOptions(options));
