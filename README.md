@@ -1,7 +1,7 @@
 # co2accounting
 <a href="https://stromdao.de/" target="_blank" title="STROMDAO - Digital Energy Infrastructure"><img src="./static/stromdao.png" align="right" height="85px" hspace="30px" vspace="30px"></a>
 
-**GHG accounting and decompensation in accordance to ISO14064-3 using [CO2 Offset API](https://co2offset.io/)**
+**GHG accounting and decompensation in accordance to ISO14064-(1,2,3) using [CO2 Offset API](https://co2offset.io/)**
 
 [![CO2Offset](https://api.corrently.io/v2.0/ghgmanage/statusimg?host=npm-co2accounting&svg=1)](https://co2offset.io/badge.html?host=npm-co2accounting)[![NPM Version](http://img.shields.io/npm/v/co2accounting.svg?style=flat)](https://www.npmjs.org/package/co2accounting)
 [![NPM Downloads](https://img.shields.io/npm/dm/co2accounting.svg?style=flat)](https://npmcharts.com/compare/co2accounting?minimal=true)[![CircleCI](https://circleci.com/gh/energychain/co2accounting-rapidapi/tree/main.svg?style=svg)](https://circleci.com/gh/energychain/co2accounting-rapidapi/tree/main)
@@ -80,7 +80,7 @@ Try on this on [RunKit](https://runkit.com/zoernert/co2accounting-whoami-hello-w
 
 Checkout source code first and install dependencies.
 
-Create a `.env` file containing your RapidAPI Key [Retrieve/Signup](https://rapidapi.com/stromdao-stromdao-default/api/co2-offset).
+Create a `.env` file containing your RapidAPI Key [Retrieve/Signup](https://rapidapi.com/stromdao-stromdao-default/api/co2-offset). If you want to use `co2accounting` without an RapidAPI account, you might get in contact with [STROMDAO](kontakt@stromdao.com) to get a precharged account.
 
 ```
 RAPIDAPIKEY=YOURAPIKEY-GOES-HERE

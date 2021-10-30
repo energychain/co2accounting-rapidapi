@@ -4,10 +4,34 @@ const axios = require("axios");
 
 const co2accounting = function(rapidAPIkey) {
 
+  let baseURL = 'https://co2-offset.p.rapidapi.com/';
+
+  let headers = {
+        "content-type":"application/json",
+        "x-rapidapi-host":"co2-offset.p.rapidapi.com",
+        "x-rapidapi-key":rapidAPIkey,
+        "useQueryString":true
+  };
+  
+  if(rapidAPIkey.length !== 50) {
+      headers = {
+          "content-type":"application/json",
+          "x-account": rapidAPIkey
+      }
+      baseURL = 'https://api.corrently.io/v2.0/';
+  }
+
   let parent = this;
   this.EVENTRELOAD = 900000;
 
   this._forceEventReload = new Date().getTime() + this.EVENTRELOAD;
+
+  if(typeof window !== 'undefined') {
+    let nextReload = window.localStorage.getItem("nextEventReload");
+    if((typeof nextReload !== 'undefined')&&(nextReload !== null)) {
+      this._forceEventReload = nextReload;
+    }
+  }
 
   this._getAllDBEvents = function() {
     return new Promise(function (resolve, reject) {
@@ -63,14 +87,10 @@ const co2accounting = function(rapidAPIkey) {
   this._compensate = async function(gramsCO2,event) {
           let settings = {
                 "method":"GET",
-                "url":"https://co2-offset.p.rapidapi.com/rapidapi/compensate",
-                "headers":{
-                "content-type":"application/octet-stream",
-                "x-rapidapi-host":"co2-offset.p.rapidapi.com",
-                "x-rapidapi-key":rapidAPIkey,
-                "useQueryString":true
-                },"params":{
-                "gram":gramsCO2
+                "url":baseURL+"rapidapi/compensate",
+                "headers":headers,
+                "params":{
+                  "gram":gramsCO2
                 }
           };
 
@@ -85,13 +105,9 @@ const co2accounting = function(rapidAPIkey) {
   this._identityLookup = async function(account,caching) {
           let settings = {
                   "method":"GET",
-                  "url":"https://co2-offset.p.rapidapi.com/co2/identity",
-                  "headers":{
-                  "content-type":"application/octet-stream",
-                  "x-rapidapi-host":"co2-offset.p.rapidapi.com",
-                  "x-rapidapi-key":rapidAPIkey,
-                  "useQueryString":true
-                  },"params":{
+                  "url":baseURL+"co2/identity",
+                  "headers":headers,
+                  "params":{
                     "account":account
                   }
           }
@@ -117,13 +133,9 @@ const co2accounting = function(rapidAPIkey) {
   this.eventDelete = async function(event) {
           const responds = await axios({
                 "method":"GET",
-                "url":"https://co2-offset.p.rapidapi.com/rapidapi/forgetEvent",
-                "headers":{
-                "content-type":"application/octet-stream",
-                "x-rapidapi-host":"co2-offset.p.rapidapi.com",
-                "x-rapidapi-key":rapidAPIkey,
-                "useQueryString":true
-                },"params":{
+                "url":baseURL+"rapidapi/forgetEvent",
+                "headers":headers,
+                "params":{
                   "event":event
                 }
         });
@@ -138,13 +150,9 @@ const co2accounting = function(rapidAPIkey) {
   this.searchFootprint = async function(query) {
             const responds = await axios({
                   "method":"GET",
-                  "url":"https://co2-offset.p.rapidapi.com/co2/activity/search",
-                  "headers":{
-                  "content-type":"application/octet-stream",
-                  "x-rapidapi-host":"co2-offset.p.rapidapi.com",
-                  "x-rapidapi-key":rapidAPIkey,
-                  "useQueryString":true
-                  },"params":{
+                  "url":baseURL+"co2/activity/search",
+                  "headers":headers,
+                  "params":{
                     "q":query
                   }
           });
@@ -181,16 +189,13 @@ const co2accounting = function(rapidAPIkey) {
             if(requireFetch) {
                 const responds = await axios({
                       "method":"GET",
-                      "url":"https://co2-offset.p.rapidapi.com/co2/listEvents",
-                      "headers":{
-                      "content-type":"application/octet-stream",
-                      "x-rapidapi-host":"co2-offset.p.rapidapi.com",
-                      "x-rapidapi-key":rapidAPIkey,
-                      "useQueryString":true
-                    },"params":reqoptions
+                      "url":baseURL+"co2/listEvents",
+                      "headers":headers,
+                      "params":reqoptions
                   });
                 fetchedData = responds.data;
                 parent._forceEventReload = new Date().getTime() + parent.EVENTRELOAD;
+
               try {
                 if((typeof window !== 'undefined')&&(window.indexedDB)) {
                   const request = window.indexedDB.open("co2events", 1);
@@ -206,6 +211,7 @@ const co2accounting = function(rapidAPIkey) {
                       store.add(fetchedData[i]);
                     }
                   }
+                  window.localStorage.setItem("nextEventReload",parent._forceEventReload);
                 } else {
                   const level = require("level");
                   level('co2events', { createIfMissing: true }, async function (err, db) {
@@ -238,13 +244,8 @@ const co2accounting = function(rapidAPIkey) {
 
             const responds = await axios({
                   "method":"GET",
-                  "url": "https://co2-offset.p.rapidapi.com/rapidapi/dispatchcert?zip="+zip+"&wh="+wh+"&product="+product+queryString,
-                  "headers":{
-                  "content-type":"application/octet-stream",
-                  "x-rapidapi-host":"co2-offset.p.rapidapi.com",
-                  "x-rapidapi-key":rapidAPIkey,
-                  "useQueryString":true
-                  }
+                  "url": baseURL+"rapidapi/dispatchcert?zip="+zip+"&wh="+wh+"&product="+product+queryString,
+                  "headers":headers
           });
           return responds.data;
   };
@@ -255,13 +256,8 @@ const co2accounting = function(rapidAPIkey) {
 
           const responds = await axios({
                   "method":"GET",
-                  "url":"https://co2-offset.p.rapidapi.com/rapidapi/balanceOf?nonece"+nonece,
-                  "headers":{
-                  "content-type":"application/octet-stream",
-                  "x-rapidapi-host":"co2-offset.p.rapidapi.com",
-                  "x-rapidapi-key":rapidAPIkey,
-                  "useQueryString":true
-                },"params":options
+                  "url":baseURL+"rapidapi/balanceOf?nonece"+nonece,
+                  "headers":headers,"params":options
           });
           return responds.data;
   };
@@ -269,13 +265,8 @@ const co2accounting = function(rapidAPIkey) {
   this.settleEvent = async function(settlement) {
           const responds = await axios({
                   "method":"POST",
-                  "url":"https://co2-offset.p.rapidapi.com/rapidapi/co2event",
-                  "headers":{
-                  "content-type":"application/json",
-                  "x-rapidapi-host":"co2-offset.p.rapidapi.com",
-                  "x-rapidapi-key":rapidAPIkey,
-                  "useQueryString":true
-                  },"data":settlement
+                  "url":baseURL+"rapidapi/co2event",
+                  "headers":headers,"data":settlement
           });
           parent._forceEventReload = 0;
           return responds.data;
@@ -284,13 +275,8 @@ const co2accounting = function(rapidAPIkey) {
   this.certificates = async function() {
         const responds = await axios({
                 "method":"GET",
-                "url":"https://co2-offset.p.rapidapi.com/rapidapi/certificates",
-                "headers":{
-                "content-type":"application/json",
-                "x-rapidapi-host":"co2-offset.p.rapidapi.com",
-                "x-rapidapi-key":rapidAPIkey,
-                "useQueryString":true
-                }
+                "url":baseURL+"rapidapi/certificates",
+                "headers":headers
         });
         return responds.data;
   }
@@ -298,13 +284,9 @@ const co2accounting = function(rapidAPIkey) {
   this.allow = async function(sender,allow) {
           const responds = await axios({
               "method":"POST",
-                  "url":"https://co2-offset.p.rapidapi.com/rapidapi/allowSender",
-                  "headers":{
-                  "content-type":"application/json",
-                  "x-rapidapi-host":"co2-offset.p.rapidapi.com",
-                  "x-rapidapi-key":rapidAPIkey,
-                  "useQueryString":true
-                  },"data":{
+                  "url":baseURL+"rapidapi/allowSender",
+                  "headers":headers,
+                  "data":{
                     "sender":sender,
                     "allow":allow
                     }
@@ -315,13 +297,9 @@ const co2accounting = function(rapidAPIkey) {
   this.transfer = async function(_event,to) {
           const responds = await axios({
               "method":"POST",
-                  "url":"https://co2-offset.p.rapidapi.com/rapidapi/transfer",
-                  "headers":{
-                  "content-type":"application/json",
-                  "x-rapidapi-host":"co2-offset.p.rapidapi.com",
-                  "x-rapidapi-key":rapidAPIkey,
-                  "useQueryString":true
-                  },"data":{
+                  "url":baseURL+"rapidapi/transfer",
+                  "headers":headers,
+                  "data":{
                     "event":_event,
                     "to":to
                     }
@@ -333,13 +311,8 @@ const co2accounting = function(rapidAPIkey) {
   this.whoami = async function() {
         const responds = await axios({
                 "method":"GET",
-                "url":"https://co2-offset.p.rapidapi.com/rapidapi/whoami",
-                "headers":{
-                "content-type":"application/json",
-                "x-rapidapi-host":"co2-offset.p.rapidapi.com",
-                "x-rapidapi-key":rapidAPIkey,
-                "useQueryString":true
-                }
+                "url":baseURL+"rapidapi/whoami",
+                "headers":headers
         });
         return responds.data.account;
   }
