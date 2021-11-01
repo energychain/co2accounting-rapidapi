@@ -214,6 +214,16 @@ const co2accounting = function(rapidAPIkey) {
           return await parent._identityLookup(account);
   };
 
+  this.createViewAccount = async function() {
+      const responds = await axios({
+          "method":"POST",
+              "url":"https://api.corrently.io/v2.0/co2/createViewAccount",
+              "headers":headers,
+              "data":{}
+      });
+      return responds.data;
+  };
+
   this.searchFootprint = async function(query) {
             const responds = await axios({
                   "method":"GET",
