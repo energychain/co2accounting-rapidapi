@@ -297,6 +297,7 @@ const co2accounting = function(rapidAPIkey) {
                   });
                 }
               } catch(e) {console.debug(e);}
+              data = await parent._getAllCertificates();
           }
           // merge data and fetchedData
           data =  data.concat(fetchedData);
@@ -312,7 +313,7 @@ const co2accounting = function(rapidAPIkey) {
 
   this.disaggregationElectricity  = async function(zip,wh,product,meta) {
             let queryString = '';
-            if((typeof meta !== 'undefined') || (meta !== null)) {
+            if((typeof meta !== 'undefined') && (meta !== null)) {
               for (const [key, value] of Object.entries(meta)) {
                 queryString += '&' + key + '=' + encodeURIComponent(value);
               }
@@ -432,9 +433,9 @@ const co2accounting = function(rapidAPIkey) {
             });
           }
         } catch(e) {console.debug(e);}
+        data = await parent._getAllCertificates();
     }
-    // merge data and fetchedData
-    data =  data.concat(fetchedData);
+
     return data;
   }
 
