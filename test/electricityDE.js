@@ -25,7 +25,7 @@ describe('CO2 Accounting - Electricity Germany', function() {
   describe('#disaggregationElectricity("10117",200,"eco")', function() {
     it('Retrieve Results for Berlin and validate Disaggregation', async function() {
       let result = await instance.disaggregationElectricity('10117',200,'eco');
-      assert.equal(typeof result.co2 !== 'undefined', true);
+      assert.equal(typeof result.co2eq !== 'undefined', true);
       assert.equal(typeof result.compliance !== 'undefined', true);
       assert.equal(typeof result.presafing !== 'undefined', true);
       assert.equal(typeof result.generation !== 'undefined', true);
