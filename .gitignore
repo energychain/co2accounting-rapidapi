@@ -103,5 +103,7 @@ dist
 # TernJS port file
 .tern-port
 
-# App Specific 
+# App Specific
 co2events/
+co2certificates/
+.co2account.json

@@ -12,7 +12,7 @@ const co2accounting = function(rapidAPIkey) {
         "x-rapidapi-key":rapidAPIkey,
         "useQueryString":true
   };
-  
+
   if(rapidAPIkey.length !== 50) {
       headers = {
           "content-type":"application/json",
@@ -25,6 +25,8 @@ const co2accounting = function(rapidAPIkey) {
   this.EVENTRELOAD = 900000;
 
   this._forceEventReload = new Date().getTime() + this.EVENTRELOAD;
+  this._forceCertificateReload = new Date().getTime() + this.EVENTRELOAD;
+  this._forceBalanceReload = new Date().getTime() + this.EVENTRELOAD;
 
   if(typeof window !== 'undefined') {
     let nextReload = window.localStorage.getItem("nextEventReload");
@@ -34,12 +36,12 @@ const co2accounting = function(rapidAPIkey) {
   }
 
   this._getAllDBEvents = function() {
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve) {
       if(typeof window !== 'undefined') {
             const request = window.indexedDB.open("co2events", 1);
             request.onupgradeneeded = function(event) {
               const db = event.target.result;
-              const objectStore = db.createObjectStore("events", { keyPath: "event"});
+              db.createObjectStore("events", { keyPath: "event"});
             }
             request.onsuccess= function(event) {
               try {
@@ -62,7 +64,7 @@ const co2accounting = function(rapidAPIkey) {
                  };
                } catch(e) {
                  resolve([]);
-               };
+               }
              };
       } else {
           const level = require("level");
@@ -71,12 +73,66 @@ const co2accounting = function(rapidAPIkey) {
           level('co2events', { createIfMissing: true }, function (err, db) {
             db.createReadStream({})
             .on('data', function(data) {
-              events.push(data.value);
+              events.push(JSON.parse(data.value));
             })
             .on('close',function() {
-              // resolve(events);
+
             })
             .on('end',function() {
+              db.close();
+              resolve(events);
+
+            })
+          });
+      }
+
+    });
+  }
+
+  this._getAllCertificates = function() {
+    return new Promise(function (resolve) {
+      if(typeof window !== 'undefined') {
+            const request = window.indexedDB.open("co2certificates", 1);
+            request.onupgradeneeded = function(event) {
+              const db = event.target.result;
+              db.createObjectStore("certificates", { keyPath: "compensation"});
+            }
+            request.onsuccess= function(event) {
+              try {
+                const db = event.target.result;
+                const txn = db.transaction('certificates', "readonly");
+                 const objectStore = txn.objectStore('certificates');
+                 let events = [];
+
+                 objectStore.openCursor().onsuccess = (event) => {
+                     let cursor = event.target.result;
+                     if (cursor) {
+                         let dbevent = cursor.value;
+                         events.push(dbevent);
+                         cursor.continue();
+                     }
+                 }
+                 txn.oncomplete = function () {
+                     db.close();
+                     resolve(events);
+                 };
+               } catch(e) {
+                 resolve([]);
+               }
+             }
+      } else {
+          const level = require("level");
+          let events = [];
+
+          level('co2certificates', { createIfMissing: true }, function (err, db) {
+            db.createReadStream({})
+            .on('data', function(data) {
+                events.push(JSON.parse(data.value));
+            })
+            .on('close',function() {
+            })
+            .on('end',function() {
+              db.close();
               resolve(events);
             })
           });
@@ -143,6 +199,17 @@ const co2accounting = function(rapidAPIkey) {
         return responds.data;
   };
 
+  this.eventModify = async function(_event,data) {
+      const responds = await axios({
+          "method":"POST",
+              "url":baseURL+"co2/updateEvent?event="+_event,
+              "headers":headers,
+              "data":data
+      });
+      parent._forceEventReload = 0;
+      return responds.data;
+  };
+
   this.identityLookup = async function(account) {
           return await parent._identityLookup(account);
   };
@@ -182,9 +249,7 @@ const co2accounting = function(rapidAPIkey) {
                 } else {
                   reqoptions.timestamp = newestEventTime * 1;
                 }
-            } catch (e) {
-
-            }
+            } catch (e) {console.debug(e);}
 
             if(requireFetch) {
                 const responds = await axios({
@@ -200,8 +265,8 @@ const co2accounting = function(rapidAPIkey) {
                 if((typeof window !== 'undefined')&&(window.indexedDB)) {
                   const request = window.indexedDB.open("co2events", 1);
                   request.onupgradeneeded = function(event) {
-                  	const db = event.target.result;
-                  	const objectStore = db.createObjectStore("events", { keyPath: "event"});
+                    const db = event.target.result;
+                    db.createObjectStore("events", { keyPath: "event"});
                   }
                   request.onsuccess= function(event) {
                     const db = event.target.result;
@@ -216,11 +281,12 @@ const co2accounting = function(rapidAPIkey) {
                   const level = require("level");
                   level('co2events', { createIfMissing: true }, async function (err, db) {
                     for(let i=0;i<fetchedData.length;i++) {
-                      db.put(fetchedData[i].event,fetchedData[i]);
+                      await db.put(fetchedData[i].event,JSON.stringify(fetchedData[i]));
                     }
+                    await db.close();
                   });
                 }
-              } catch(e) {}
+              } catch(e) {console.debug(e);}
           }
           // merge data and fetchedData
           data =  data.concat(fetchedData);
@@ -252,14 +318,41 @@ const co2accounting = function(rapidAPIkey) {
 
   this.balance = async function(options) {
          if((typeof options == 'undefined')||(options == null)) { options = {}; }
-          let nonece = new Date().getTime() + "_" + Math.random();
-
-          const responds = await axios({
-                  "method":"GET",
-                  "url":baseURL+"rapidapi/balanceOf?nonece"+nonece,
-                  "headers":headers,"params":options
-          });
-          return responds.data;
+          let balance = null;
+          if(typeof window !== 'undefined') {
+            balance = window.localStorage.getItem("co2balance");
+            if(balance !== null) {
+              try {
+                balance = JSON.parse(balance);
+              } catch(e) {console.debug(e);}
+            }
+          } else {
+            const fs = require("fs");
+            try {
+              let responds = JSON.parse(fs.readFileSync(".co2account.json"));
+              if(typeof responds.balance !== 'undefined') {
+                balance = responds.balance;
+              }
+            } catch(e) {
+              balance = null;
+            }
+          }
+          if((typeof options.forceReload !== 'undefined')||(balance==null)) {
+            let nonece = new Date().getTime() + "_" + Math.random();
+            const responds = await axios({
+                    "method":"GET",
+                    "url":baseURL+"rapidapi/balanceOf?nonece="+nonece,
+                    "headers":headers,"params":options
+            });
+            parent._forceBalanceReload = new Date().getTime() + parent.EVENTRELOAD;
+            balance = responds.data;
+            if(typeof window !== 'undefined') {
+              window.localStorage.setItem("co2balance",JSON.stringify(balance));
+            } else {
+              // not implemented for CLI usage!
+            }
+          }
+          return balance;
   };
 
   this.settleEvent = async function(settlement) {
@@ -273,12 +366,66 @@ const co2accounting = function(rapidAPIkey) {
   };
 
   this.certificates = async function() {
-        const responds = await axios({
-                "method":"GET",
-                "url":baseURL+"rapidapi/certificates",
-                "headers":headers
-        });
-        return responds.data;
+
+      let requireFetch = true;
+      let data = [];
+      let fetchedData = [];
+
+      let reqoptions = {};
+
+      try {
+          data = await parent._getAllCertificates();
+          let newestCertificateTime = 0;
+          for(let i=0;i<data.length;i++) {
+            if(data[i].timeStamp > newestCertificateTime) newestCertificateTime = data[i].timeStamp;
+          }
+          if((parent._forceEventReload > new Date().getTime()) && (data.length >0)) {
+            requireFetch = false;
+          } else {
+            reqoptions.timestamp = newestCertificateTime * 1;
+          }
+      } catch (e) {
+          console.log("Certificate Cache Error",e);
+      }
+
+      if(requireFetch) {
+          const responds = await axios({
+                    "method":"GET",
+                    "url":baseURL+"rapidapi/certificates",
+                    "headers":headers
+          });
+          fetchedData = responds.data;
+          parent._forceCertificateReload = new Date().getTime() + parent.EVENTRELOAD;
+
+        try {
+          if((typeof window !== 'undefined')&&(window.indexedDB)) {
+            const request = window.indexedDB.open("co2certificates", 1);
+            request.onupgradeneeded = function(event) {
+              const db = event.target.result;
+              db.createObjectStore("certificates", { keyPath: "compensation"});
+            }
+            request.onsuccess= function(event) {
+              const db = event.target.result;
+              let transaction = db.transaction("certificates", "readwrite");
+              const store = transaction.objectStore("certificates");
+              for(let i=0;i<fetchedData.length;i++) {
+                store.add(fetchedData[i]);
+              }
+            }
+            window.localStorage.setItem("nextCertificateReload",parent._forceCertificateReload);
+          } else {
+            const level = require("level");
+            level('co2certificates', { createIfMissing: true }, async function (err, db) {
+              for(let i=0;i<fetchedData.length;i++) {
+                db.put(fetchedData[i].compensation,JSON.stringify(fetchedData[i]));
+              }
+            });
+          }
+        } catch(e) {console.debug(e);}
+    }
+    // merge data and fetchedData
+    data =  data.concat(fetchedData);
+    return data;
   }
 
   this.allow = async function(sender,allow) {
@@ -309,12 +456,46 @@ const co2accounting = function(rapidAPIkey) {
   };
 
   this.whoami = async function() {
-        const responds = await axios({
-                "method":"GET",
-                "url":baseURL+"rapidapi/whoami",
-                "headers":headers
-        });
-        return responds.data.account;
+        if(typeof parent._iam == 'undefined') {
+          let account = '';
+          try {
+            if(typeof window !== 'undefined') {
+              account = window.localStorage.getItem("co2account");
+            } else {
+              try {
+                const fs = require("fs");
+                let responds = JSON.parse(fs.readFileSync(".co2account.json"));
+                if(typeof responds.account !== 'undefined') {
+                    account = responds.account;
+                }
+              } catch(e) {
+                account = null;
+              }
+            }
+            if((typeof account == 'undefined')||(account == null)||(account.length < 2)) {
+              const responds = await axios({
+                      "method":"GET",
+                      "url":baseURL+"rapidapi/whoami",
+                      "headers":headers
+              });
+              account = responds.data.account;
+              if(typeof window !== 'undefined') {
+                 window.localStorage.setItem("co2account",account);
+              } else {
+                const fs = require("fs");
+                try {
+                  fs.writeFileSync(".co2account.json",JSON.stringify({account:account}));
+                } catch(e) {console.debug(e);}
+              }
+            }
+            parent._iam = account;
+            return account;
+
+          } catch(e) {console.debug(e);}
+
+        } else {
+          return parent._iam;
+        }
   }
 }
 
