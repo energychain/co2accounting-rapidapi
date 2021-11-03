@@ -199,6 +199,18 @@ const co2accounting = function(rapidAPIkey) {
         return responds.data;
   };
 
+  this.keyValue = async function(data) {
+      if(data == null) data = {};
+      const responds = await axios({
+          "method":"POST",
+              "url":baseURL+"rapidapi/kv",
+              "headers":headers,
+              "data":data
+      });
+      parent._forceEventReload = 0;
+      return responds.data;
+  };
+
   this.eventModify = async function(_event,data) {
       const responds = await axios({
           "method":"POST",
@@ -217,7 +229,7 @@ const co2accounting = function(rapidAPIkey) {
   this.createViewAccount = async function() {
       const responds = await axios({
           "method":"POST",
-              "url":"https://api.corrently.io/v2.0/co2/createViewAccount",
+              "url":baseURL+"co2/createViewAccount",
               "headers":headers,
               "data":{}
       });
@@ -375,7 +387,15 @@ const co2accounting = function(rapidAPIkey) {
           parent._forceEventReload = 0;
           return responds.data;
   };
-
+  this.creditVoucher = async function(code) {
+          const responds = await axios({
+                  "method":"POST",
+                  "url":baseURL+"rapidapi/voucher",
+                  "headers":headers,"data":{code:code}
+          });
+          parent._forceEventReload = 0;
+          return responds.data;
+  };
   this.certificates = async function() {
 
       let requireFetch = true;
