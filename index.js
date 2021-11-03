@@ -201,6 +201,7 @@ const co2accounting = function(rapidAPIkey) {
 
   this.keyValue = async function(data) {
       if(data == null) data = {};
+      console.log(data);
       const responds = await axios({
           "method":"POST",
               "url":baseURL+"rapidapi/kv",

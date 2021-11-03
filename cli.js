@@ -55,6 +55,20 @@ program
  });
 
  program
+   .command('keyvalue <key> <value>')
+   .description('Retrieve Key Value Store')
+   .option('-k,--rapidapi <key>', 'RapidAPI Key')
+   .option('-v,--verbose', 'more verbose output')
+   .option('-j,--json', 'Output JSON')
+   .action(async (key,value,options) => {
+     let data = {};
+     data[key] = value;
+     const instance = new CO2Accounting(getAPIKey(options));
+     let result = await instance.keyValue(data);
+     console.log(result);
+  });
+
+ program
    .command('compensate <grams>')
    .description('Direct compensate given number grams or CO2')
    .option('-k,--rapidapi <key>', 'RapidAPI Key')
