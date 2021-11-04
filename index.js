@@ -201,7 +201,6 @@ const co2accounting = function(rapidAPIkey) {
 
   this.keyValue = async function(data) {
       if(data == null) data = {};
-      console.log(data);
       const responds = await axios({
           "method":"POST",
               "url":baseURL+"rapidapi/kv",
@@ -309,7 +308,7 @@ const co2accounting = function(rapidAPIkey) {
                     await db.close();
                   });
                 }
-              } catch(e) {console.debug(e);}
+              } catch(e) {console.log(e);}
               data = await parent._getAllCertificates();
           }
           // merge data and fetchedData
@@ -454,7 +453,7 @@ const co2accounting = function(rapidAPIkey) {
             });
           }
         } catch(e) {console.debug(e);}
-        data = await parent._getAllCertificates();
+        data = await parent._getAllDBEvents();
     }
 
     return data;
