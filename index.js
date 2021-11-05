@@ -388,10 +388,28 @@ const co2accounting = function(rapidAPIkey) {
           parent._forceEventReload = 0;
           return responds.data;
   };
-  this.updateMeter = async function(meterdata) {
+  this.createAccount = async function(meterdata) {
           const responds = await axios({
                   "method":"POST",
-                  "url":baseURL+"rapidapi/updateMeter",
+                  "url":baseURL+"co2/createAccount",
+                  "headers":headers,"data":meterdata
+          });
+          parent._forceEventReload = 0;
+          return responds.data;
+  };
+  this.addMeter = async function(meterdata) {
+          const responds = await axios({
+                  "method":"POST",
+                  "url":baseURL+"co2/addMeter",
+                  "headers":headers,"data":meterdata
+          });
+          parent._forceEventReload = 0;
+          return responds.data;
+  };
+  this.addMeteredReading = async function(meterdata) {
+          const responds = await axios({
+                  "method":"POST",
+                  "url":baseURL+"co2/addMeteredReading",
                   "headers":headers,"data":meterdata
           });
           parent._forceEventReload = 0;
