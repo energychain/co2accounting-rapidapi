@@ -263,11 +263,11 @@ program
      .option('-t,--title <EventTitle>', 'Title (default=CLI Events)')
      .option('-a,--activity <footprintId>', 'Id from footprint lookup to preset unit, factor, title (default=none)')
      .option('-s,--presafing <grams>', 'Upstream safing/compensation')
+     .option('-c,--category <category>', 'Layer 3 category for event')
      .option('-r,--transfer <recipient>', 'Directly transfer to recipient after settlment')
      .option('--startTime <UnixTimeStamp>', 'Starting Time of Event in Milliseconds')
      .option('--endTime <UnixTimeStamp>', 'End Time of Event in Milliseconds')
      .option('--scope <scope>', 'Scope in GHG Protocol Standard - ISO14064 (Default: none)')
-     .option('--category <scope>', 'Scope in GHG Protocol Standard - ISO14064 (Default: none)')
      .action(async (options) => {
        const instance = new CO2Accounting(getAPIKey(options));
 
