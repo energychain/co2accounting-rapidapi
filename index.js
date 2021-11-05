@@ -309,11 +309,8 @@ const co2accounting = function(rapidAPIkey) {
                   });
                 }
               } catch(e) {console.log(e);}
-<<<<<<< HEAD
+
               data = await parent._getAllDBEvents();
-=======
-              data = await parent._getAllCertificates();
->>>>>>> a03ce41540ad2ac162a7b0e112bb9c9c2dd7d398
           }
           // merge data and fetchedData
           data =  data.concat(fetchedData);
