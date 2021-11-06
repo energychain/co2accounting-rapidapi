@@ -406,6 +406,15 @@ const co2accounting = function(rapidAPIkey) {
           parent._forceEventReload = 0;
           return responds.data;
   };
+  this.listMeters = async function() {
+      const responds = await axios({
+                "method":"GET",
+                "url":baseURL+"co2/listMeters",
+                "headers":headers
+      });
+      let fetchedData = responds.data;
+      return fetchedData;
+  }
   this.addMeteredReading = async function(meterdata) {
           const responds = await axios({
                   "method":"POST",
