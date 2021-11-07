@@ -21,6 +21,8 @@ const co2accounting = function(rapidAPIkey) {
       baseURL = 'https://api.corrently.io/v2.0/';
   }
 
+  this.isOnline = true;
+
   let parent = this;
   this.EVENTRELOAD = 900000;
 
@@ -159,21 +161,28 @@ const co2accounting = function(rapidAPIkey) {
   };
 
   this._identityLookup = async function(account,caching) {
-          let settings = {
-                  "method":"GET",
-                  "url":baseURL+"co2/identity",
-                  "headers":headers,
-                  "params":{
-                    "account":account
-                  }
-          }
+          if((typeof window !== 'undefined')&&(typeof window.localStorage.getItem("id_"+account) !== 'undefined') && (window.localStorage.getItem("id_"+account) !==  null)) {
+                return JSON.parse(window.localStorage.getItem("id_"+account));
+          } else {
+            let settings = {
+                    "method":"GET",
+                    "url":baseURL+"co2/identity",
+                    "headers":headers,
+                    "params":{
+                      "account":account
+                    }
+            }
 
-          if((typeof caching !== 'undefined') && (caching !== null)) {
-            settings.params.nonece = new Date().getTime() + "_" + Math.random();
-          }
+            if((typeof caching !== 'undefined') && (caching !== null)) {
+              settings.params.nonece = new Date().getTime() + "_" + Math.random();
+            }
 
-          const responds = await axios(settings);
-          return responds.data;
+            const responds = await axios(settings);
+            if(typeof window !== 'undefined') {
+              window.localStorage.setItem("id_"+account,JSON.stringify(responds.data));
+            }
+            return responds.data;
+        }
   };
 
   this.directCompensate = async function(gramsCO2) {
@@ -274,14 +283,20 @@ const co2accounting = function(rapidAPIkey) {
             } catch (e) {console.debug(e);}
 
             if(requireFetch) {
-                const responds = await axios({
-                      "method":"GET",
-                      "url":baseURL+"co2/listEvents",
-                      "headers":headers,
-                      "params":reqoptions
-                  });
-                fetchedData = responds.data;
-                parent._forceEventReload = new Date().getTime() + parent.EVENTRELOAD;
+                try {
+                  const responds = await axios({
+                        "method":"GET",
+                        "url":baseURL+"co2/listEvents",
+                        "headers":headers,
+                        "params":reqoptions
+                    });
+                  fetchedData = responds.data;
+                  parent.isOnline = true;
+                  parent._forceEventReload = new Date().getTime() + parent.EVENTRELOAD;
+                } catch(e) {
+                  parent.isOnline = false;
+
+                }
 
               try {
                 if((typeof window !== 'undefined')&&(window.indexedDB)) {
@@ -312,8 +327,7 @@ const co2accounting = function(rapidAPIkey) {
 
               data = await parent._getAllDBEvents();
           }
-          // merge data and fetchedData
-          data =  data.concat(fetchedData);
+        
           if(typeof options.scope !== 'undefined') {
               let ndata = [];
               for(let i=0;i<data.length;i++) {
@@ -388,6 +402,7 @@ const co2accounting = function(rapidAPIkey) {
           parent._forceEventReload = 0;
           return responds.data;
   };
+
   this.createAccount = async function(meterdata) {
           const responds = await axios({
                   "method":"POST",
@@ -397,6 +412,7 @@ const co2accounting = function(rapidAPIkey) {
           parent._forceEventReload = 0;
           return responds.data;
   };
+
   this.addMeter = async function(meterdata) {
           const responds = await axios({
                   "method":"POST",
@@ -406,6 +422,7 @@ const co2accounting = function(rapidAPIkey) {
           parent._forceEventReload = 0;
           return responds.data;
   };
+
   this.listMeters = async function() {
       const responds = await axios({
                 "method":"GET",
@@ -415,6 +432,7 @@ const co2accounting = function(rapidAPIkey) {
       let fetchedData = responds.data;
       return fetchedData;
   }
+
   this.addMeteredReading = async function(meterdata) {
           const responds = await axios({
                   "method":"POST",
@@ -424,6 +442,7 @@ const co2accounting = function(rapidAPIkey) {
           parent._forceEventReload = 0;
           return responds.data;
   };
+
   this.creditVoucher = async function(code) {
           const responds = await axios({
                   "method":"POST",
@@ -433,6 +452,7 @@ const co2accounting = function(rapidAPIkey) {
           parent._forceEventReload = 0;
           return responds.data;
   };
+
   this.certificates = async function() {
 
       let requireFetch = true;
@@ -457,14 +477,18 @@ const co2accounting = function(rapidAPIkey) {
       }
 
       if(requireFetch) {
-          const responds = await axios({
-                    "method":"GET",
-                    "url":baseURL+"rapidapi/certificates",
-                    "headers":headers
-          });
-          fetchedData = responds.data;
-          parent._forceCertificateReload = new Date().getTime() + parent.EVENTRELOAD;
-
+          try {
+            const responds = await axios({
+                      "method":"GET",
+                      "url":baseURL+"rapidapi/certificates",
+                      "headers":headers
+            });
+            fetchedData = responds.data;
+            parent._forceCertificateReload = new Date().getTime() + parent.EVENTRELOAD;
+            parent.isOnline = true;
+          } catch(e) {
+              parent.isOnline = false;
+          }
         try {
           if((typeof window !== 'undefined')&&(window.indexedDB)) {
             const request = window.indexedDB.open("co2certificates", 1);
@@ -490,7 +514,7 @@ const co2accounting = function(rapidAPIkey) {
             });
           }
         } catch(e) {console.debug(e);}
-        data = await parent._getAllDBEvents();
+        data = await parent._getAllCertificates();
     }
 
     return data;
