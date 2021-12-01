@@ -18,7 +18,7 @@ const co2accounting = function(rapidAPIkey) {
           "content-type":"application/json",
           "x-account": rapidAPIkey
       }
-      baseURL = 'https://api.corrently.io/v2.0/';
+      baseURL = 'https://co2offset.io/v2.0/';
   }
 
   this.isOnline = true;
@@ -210,14 +210,25 @@ const co2accounting = function(rapidAPIkey) {
 
   this.keyValue = async function(data) {
       if(data == null) data = {};
-      const responds = await axios({
-          "method":"POST",
-              "url":baseURL+"rapidapi/kv",
-              "headers":headers,
-              "data":data
-      });
-      parent._forceEventReload = 0;
-      return responds.data;
+      try {
+        const responds = await axios({
+            "method":"POST",
+                "url":baseURL+"rapidapi/kv",
+                "headers":headers,
+                "data":data
+        });
+        parent._forceEventReload = 0;
+        parent.isOnline  = true;
+        if(typeof window !== 'undefined') {
+          window.localStorage.setItem("meta",JSON.stringify(responds.data));
+        }
+        return responds.data;
+      } catch(e) {
+        parent.isOnline  = false;
+        if(typeof window !== 'undefined') {
+          return JSON.parse(window.localStorage.getItem("meta"));
+        }
+      }
   };
 
   this.eventModify = async function(_event,data) {
@@ -327,7 +338,7 @@ const co2accounting = function(rapidAPIkey) {
 
               data = await parent._getAllDBEvents();
           }
-        
+
           if(typeof options.scope !== 'undefined') {
               let ndata = [];
               for(let i=0;i<data.length;i++) {
